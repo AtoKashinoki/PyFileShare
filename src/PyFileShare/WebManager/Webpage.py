@@ -9,7 +9,7 @@ This file contains the Webpage-relate processes used for manage webpages.
 
 
 import os
-from CodingTools import mkdir, rmtree, mk_rote
+from .CodingTools.os import mkdir, rmtree, mk_root, path_replace_os_sep
 
 from typing import Any, Callable
 
@@ -22,7 +22,7 @@ from .WebpageMeta import (
     read_webpage_meta, access_webpage_meta, META_FORMAT,
 )
 
-from CodingTools.Function import ConsoleCaveat
+from .CodingTools.Function import ConsoleCaveat
 
 
 """ rename """
@@ -47,26 +47,29 @@ WEB_META: str = "webpage meta"
 
 
 def get_webpage_meta(
-        _meta_path: str
-) -> dict[str, Any]:
+        _meta_path: str,
+        caveat: bool = True,
+) -> dict:
     """
     Return webpage meta.
     :return: Webpage meta data.
     """
-    create_webpage_meta(_meta_path)
+    if caveat: create_webpage_meta(_meta_path)
+    else: create_webpage_meta(_meta_path, lambda *_: True)
     webpage_meta = read_webpage_meta(_meta_path)
     return webpage_meta
 
 
 def gen_webpage_directory(
         _dist_path: str,
-        _webpage_meta: dict[str, Any],
+        _webpage_meta: dict,
+        caveat: bool = True,
 ) -> str:
     """
         Generate webpage directory.
     :return: path to webpage directory.
     """
-    rmtree_conf_access_keys: tuple[str, ...] = (
+    rmtree_conf_access_keys: tuple = (
         WMK.CONFIG, WMK.RMTREE_SELF
     )
     webpage_rmtree_conf: bool = access_webpage_meta(
@@ -74,7 +77,7 @@ def gen_webpage_directory(
         rmtree_conf_access_keys
     )
 
-    name_access_keys: tuple[str, ...] = (WMK.WEBPAGE, WMK.NAME)
+    name_access_keys: tuple = (WMK.WEBPAGE, WMK.NAME)
     webpage_name: str = access_webpage_meta(
         _webpage_meta,
         name_access_keys,
@@ -82,7 +85,8 @@ def gen_webpage_directory(
 
     webpage_data_path = os.path.join(_dist_path, webpage_name)
     if webpage_rmtree_conf:
-        rmtree(webpage_data_path)
+        if caveat: rmtree(webpage_data_path)
+        else: rmtree(webpage_data_path, caveat_process=lambda *_: True)
     mkdir(webpage_data_path)
 
     return webpage_data_path
@@ -91,7 +95,8 @@ def gen_webpage_directory(
 def recognition_web_datas(
         _path: str,
         use_meta_file: bool = True,
-) -> dict[str, str]:
+        caveat: bool = True,
+) -> dict:
     """"""
 
     """ create dist """
@@ -102,7 +107,7 @@ def recognition_web_datas(
 
     webpage_meta: dict[str: Any] = None
     if use_meta_file:
-        webpage_meta = get_webpage_meta(webpage_meta_path)
+        webpage_meta = get_webpage_meta(webpage_meta_path, caveat)
         ...
 
     if webpage_meta is None:
@@ -111,10 +116,10 @@ def recognition_web_datas(
 
     """ gen webpage data file """
     webpage_data_path =\
-        gen_webpage_directory(_path, webpage_meta)
+        gen_webpage_directory(_path, webpage_meta, caveat=caveat)
 
     """ gen path dict """
-    path_dict: dict[str, str] = {
+    path_dict: dict = {
         WEB_META: webpage_meta_path,
         WEB_DATA: webpage_data_path,
     }
@@ -131,20 +136,18 @@ def add_webpage(
         _web_dir_path: str,
         _file_path_in_web_dir: str,
         _page_source: str,
-        caveat_process: Callable[[dict[str, str]], bool] = caveat_exist,
+        caveat_process: Callable[[dict], bool] = caveat_exist,
 ) -> bool:
     """
     Add page source in web datas.
     :return: True if the file was created.
     """
-    _file_path_in_web_dir =\
-        _file_path_in_web_dir.replace("/", "\\")
 
-    mk_rote(_web_dir_path, os.path.split(_file_path_in_web_dir)[:-1])
+    _file_path_in_web_dir = path_replace_os_sep(_file_path_in_web_dir)
+
+    mk_root(_web_dir_path, _file_path_in_web_dir.split(os.sep)[:-1])
 
     page_path = os.path.join(_web_dir_path, _file_path_in_web_dir)
-
-    print(page_path)
 
     if os.path.isfile(page_path):
         if not caveat_process({"path": page_path}):
@@ -173,17 +176,17 @@ def read_file(
 
 def read_dir(
         _target_dir_path: str,
-) -> dict[str, str | dict]:
+) -> dict:
     """
     Read directory from path.
     :return: readed directory contents.
     """
 
     """ init data """
-    datas: dict[str, str | dict] = {}
+    datas: dict = {}
 
     """ get contents """
-    contents: list[str] = os.listdir(_target_dir_path)
+    contents: list = os.listdir(_target_dir_path)
 
     """ read process """
     for content in contents:
@@ -196,7 +199,7 @@ def read_dir(
             data = read_file(content_path)
             ...
 
-        datas[content.split(".")[0]] = data
+        datas[content] = data
         continue
 
     return datas
@@ -212,9 +215,13 @@ class WebpageManager:
     def __init__(
             self,
             app: Flask = Flask(__name__),
-            webpage_dist_path: str = os.path.join("", "dist"),
+            webpage_dist_path: str = os.path.join(".", "dist"),
+            caveat: bool = True,
     ) -> None:
         """ Initialize self settings """
+
+        """ options """
+        self.__caveat = caveat
 
         """ flask """
         self.__app = app
@@ -223,11 +230,16 @@ class WebpageManager:
         """ recognition webpage data """
         self.__dist_path = webpage_dist_path
 
-        path_dict = recognition_web_datas(self.dist_path)
+        path_dict = recognition_web_datas(
+            self.dist_path, caveat=self.__caveat
+        )
         self.__meta_path = path_dict[WEB_META]
         self.__data_path = path_dict[WEB_DATA]
 
         return
+
+    """ options """
+    __caveat: bool = True
 
     """ flask """
     __app: Flask
@@ -269,7 +281,7 @@ class WebpageManager:
 
     def __flask_create_pages(
             self,
-            _web_datas: dict[str, str | dict],
+            _web_datas: dict,
             top_page: str = "index",
             target_route: str = ".",
     ) -> None:
@@ -295,15 +307,18 @@ class WebpageManager:
 
         return
 
+    """ web datas """
+
     def run(
             self,
             host: str = '127.0.0.1',
             port: int = 5000,
+            pre_function: Callable = None,
             debug: bool = False,
     ) -> None:
         """ Run webpage """
 
-        web_datas: dict[str, str | dict] =\
+        web_datas: dict =\
             read_dir(self.__data_path)
 
         self.__flask_create_pages(web_datas, self.__top_page)
@@ -314,8 +329,6 @@ class WebpageManager:
             debug=debug,
         )
         return
-
-    """ web datas """
     __dist_path: str
     @property
     def dist_path(self) -> str: return self.__dist_path
@@ -334,7 +347,8 @@ class WebpageManager:
             self,
             _path_in_web_dir: str,
             _page_source: str,
-            caveat_process: Callable[[dict[str, str]], bool] = caveat_exist,
+            caveat_process: Callable[[dict], bool] =\
+                    caveat_exist if __caveat else lambda *_: True,
     ) -> bool:
         """
         Add page source in web datas.

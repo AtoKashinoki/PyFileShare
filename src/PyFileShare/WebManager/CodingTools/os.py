@@ -18,6 +18,24 @@ from .Function import ConsoleCaveat
 
 """ os processes """
 
+
+""" path """
+
+
+def path_replace_os_sep(_path: str) -> str:
+    """ Replace sep and return path """
+    after = os.sep
+
+    seps: tuple = ("\\", "/")
+    if after in seps[0]:
+        before = seps[1]
+        ...
+    else:
+        before = seps[0]
+        ...
+
+    return _path.replace(before, after)
+
 """ directory """
 
 
@@ -36,9 +54,9 @@ caveat_rmtree = ConsoleCaveat.create(
 )
 
 
-def mk_rote(
+def mk_root(
         _start_path: str,
-        _dir_names: tuple[str, ...],
+        _dir_names: list,
 ) -> bool:
     """
     Make directory rote
@@ -46,7 +64,7 @@ def mk_rote(
     """
     path = _start_path
     for dir_name in _dir_names:
-        path = os.path.join(path, dir_name)
+        path: str = os.path.join(path, dir_name)
         mkdir(path)
         continue
     return True
@@ -54,7 +72,7 @@ def mk_rote(
 
 def rmtree(
         _path: str,
-        caveat_process: Callable[[dict[str, Any]], bool] = caveat_rmtree
+        caveat_process: Callable[[dict], bool] = caveat_rmtree
 ) -> bool:
     """
         Remove a directory and its contents

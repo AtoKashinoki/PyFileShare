@@ -23,11 +23,11 @@ class CodingToolsCommandSkeleton(CommandSkeleton, ABC):
     """ CodingTools commands skeleton """
 
     """ options """
-    __options: dict = None
+    __options: dict[tuple[str, ...], Callable[[tuple[str, ...]], None]] = None
 
     def add_options(
             self,
-            _options: dict,
+            _options: dict[tuple[str, ...], Callable[[tuple[str, ...]], None]],
     ) -> None:
         if self.__options is None: self.__options = {}
         for key, value in _options.items():
@@ -36,7 +36,7 @@ class CodingToolsCommandSkeleton(CommandSkeleton, ABC):
         return
 
     """ command process """
-    def __command__(self, argv: tuple) -> Any or None:
+    def __command__(self, argv: tuple[str, ...]) -> Any | None:
         """ toml command process """
         command_argv = argv[1:]
         if len(command_argv) == 0 or command_argv[0] in self.help.names:
@@ -78,7 +78,7 @@ class Toml(CodingToolsCommandSkeleton):
         "       [create] or [-c]\n"
         "       Create toml file\n"
     )
-    __names__: tuple = ("toml", )
+    __names__: tuple[str, ...] = ("toml", )
 
     __toml_file__: str = "pyproject.toml"
     __toml_text__: str = (
@@ -146,13 +146,13 @@ class Toml(CodingToolsCommandSkeleton):
 
     """ options """
 
-    def __create__(self, argv: tuple) -> None:
+    def __create__(self, argv: tuple[str, ...]) -> None:
         """ Create toml file """
         print("Create toml file...")
 
         if path.isfile(self.__toml_file__):
             print("File already exists.")
-            next_keys: tuple = ("Y", "Yes")
+            next_keys: tuple[str, ...] = ("Y", "Yes")
             reply = input(f"Reset toml file? [{'|'.join(next_keys)}|n] -> ")
             if reply not in next_keys:
                 print("Cancelled to create toml file...")
@@ -182,10 +182,10 @@ class Library(CodingToolsCommandSkeleton):
         "       Create directory and toml of library.\n"
     )
 
-    __names__: tuple = ("library", )
+    __names__: tuple[str, ...] = ("library", )
 
-    __dirs__: tuple = ("./src", "./src/PyFileShare")
-    __files__: tuple = ("./src/PyFileShare/__init__.py", )
+    __dirs__: tuple[str, ...] = ("./src", "./src/None")
+    __files__: tuple[str, ...] = ("./src/None/__init__.py", )
 
     """ Initializer """
     def __init__(self):
@@ -202,7 +202,7 @@ class Library(CodingToolsCommandSkeleton):
 
     """ options """
 
-    def __create__(self, argv: tuple) -> None:
+    def __create__(self, argv: tuple[str, ...]) -> None:
         """ Create Library process """
         print("Create directory of library...")
 
@@ -255,20 +255,20 @@ class CodingTools(CommandSkeleton):
     )
 
     """ Initialize """
-    def __init__(self, commands: tuple):
+    def __init__(self, commands: tuple[CommandSkeleton, ...]):
         """ Initialize command list """
         super().__init__(self.__help_massage__)
         self.__commands = commands
         return
 
     """ command list """
-    __commands: tuple
+    __commands: tuple[CommandSkeleton, ...]
     @property
-    def commands(self) -> tuple:
+    def commands(self) -> tuple[CommandSkeleton, ...]:
         return self.__commands
 
     """ command process """
-    def __command__(self, argv: tuple) -> Any or None:
+    def __command__(self, argv: tuple[str, ...]) -> Any | None:
         """ Access process """
         command_argv = argv[1:]
         if len(command_argv) == 0:

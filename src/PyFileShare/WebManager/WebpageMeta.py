@@ -10,11 +10,11 @@ This file contains the WebpageMeta-relate tools used for recognizing webpage dat
 
 import os
 
-from CodingTools import Any, Callable
+from .CodingTools.Typing import Any, Callable
 
-from CodingTools import DataClass
-from CodingTools.Function import ConsoleCaveat
-from CodingTools import initialize
+from .CodingTools.Inheritance import DataClass
+from .CodingTools.Function import ConsoleCaveat
+from .CodingTools.Wrapper import initialize
 
 from json import dumps, loads
 
@@ -42,7 +42,7 @@ WMK: WebpageMetaKeys = WebpageMetaKeys
 
 
 META_NAME: str = "webpage_meta"
-META_FORMAT: dict[str: str] = \
+META_FORMAT: dict = \
     {
         WMK.WEBPAGE: {
             WMK.NAME: "Webpage",
@@ -65,7 +65,7 @@ caveat_init_meta = ConsoleCaveat.create(
 
 def create_webpage_meta(
         _path: str,
-        caveat_process: Callable[[dict[str, Any]], bool] = caveat_init_meta,
+        caveat_process: Callable[[dict], bool] = caveat_init_meta,
 ) -> bool:
     """
     Create a webpage meta file.
@@ -94,7 +94,7 @@ def create_webpage_meta(
 
 def read_webpage_meta(
         _path: str,
-) -> dict[str, Any]:
+) -> dict:
     """
     Read a webpage meta file.
     :return: Webpage meta data.
@@ -109,8 +109,8 @@ def read_webpage_meta(
 
 
 def access_webpage_meta(
-        _meta_data: dict[str, Any],
-        _access_key: tuple[str, ...]
+        _meta_data: dict,
+        _access_key: tuple
 ) -> Any:
     """
     Access webpage meta data.

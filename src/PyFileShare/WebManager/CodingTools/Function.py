@@ -10,8 +10,6 @@ This file contains the Function-relate tools used for developing in Python.
 
 from typing import Callable, Any
 
-from CodingTools.Wrapper import initialize
-
 
 """
     Functions
@@ -32,11 +30,11 @@ class ConsoleCaveat:
     @staticmethod
     def create(
             message: str = "Are you sure?",
-            choices: dict[str, bool] = {"Y": True, "n": False}
-    ) -> Callable[[dict[str, Any]], bool]:
+            choices: dict = {"Y": True, "n": False}
+    ) -> Callable[[dict], bool]:
         """ Create function that caveat in console. """
 
-        def caveat(formats: dict[str, Any] = {}) -> bool:
+        def caveat(formats: dict = {}) -> bool:
             """
                 Caveat function
             :return bool: True if the user was approved.

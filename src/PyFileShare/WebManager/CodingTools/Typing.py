@@ -16,7 +16,3 @@ from typing import (
     ItemsView,
     Iterable,
 )
-
-
-container = tuple | list | dict | set
-permutation = tuple | list

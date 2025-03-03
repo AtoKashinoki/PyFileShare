@@ -25,8 +25,8 @@ class CommandSkeleton(InheritanceSkeleton):
     def __init__(
             self,
             help_message: str = None,
-            names: tuple = None,
-            help_names: tuple = ("-h", "--help"),
+            names: tuple[str, ...] = None,
+            help_names: tuple[str, ...] = ("-h", "--help"),
     ):
         """ Initialize method """
         """ set name """
@@ -47,9 +47,9 @@ class CommandSkeleton(InheritanceSkeleton):
         return
 
     """ name """
-    __names: tuple
+    __names: tuple[str, ...]
     @property
-    def names(self) -> tuple: return self.__names
+    def names(self) -> tuple[str, ...]: return self.__names
 
     """ help command """
     @property
@@ -57,10 +57,10 @@ class CommandSkeleton(InheritanceSkeleton):
 
     """ Command process """
     @abstractmethod
-    def __command__(self, argv: tuple) -> Any or None: ...
+    def __command__(self, argv: tuple[str, ...]) -> Any | None: ...
 
     """ Call command """
-    def __call__(self, argv: tuple = tuple(sys.argv)) -> Any or None:
+    def __call__(self, argv: tuple[str] = tuple(sys.argv)) -> Any | None:
         """ Call command """
         return self.__command__(tuple(argv))
 
@@ -73,7 +73,7 @@ class Help(CommandSkeleton):
     """ Help command """
 
     """ Initializer """
-    def __init__(self, message: str, names: tuple=None):
+    def __init__(self, message: str, names: tuple[str, ...]=None):
         super().__init__(names=("-h", "--help") if names is None else names)
         self.__message = message
         return
@@ -84,7 +84,7 @@ class Help(CommandSkeleton):
     def message(self) -> str: return self.__message
 
     """ command """
-    def __command__(self, argv: tuple) -> Any or None:
+    def __command__(self, argv: tuple[str, ...]) -> Any | None:
         """ Display help message """
         print(self.__message)
         return None
