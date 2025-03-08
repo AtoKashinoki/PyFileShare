@@ -156,6 +156,10 @@ def pages_from(
 def gen_index_page(name: str, contents: dict) -> str:
     """ Generate index page """
     content: str = f"<h3>{name}<br>directory content links</h3>"
+    contents = dict(sorted(
+        contents.items(),
+        key=lambda item: item[1][0])
+    )
     for link, content_ in contents.items():
         name_ = content_[0]
         date = ""
