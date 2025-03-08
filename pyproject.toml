@@ -5,7 +5,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'PyFileShare'
-version = '1.0.0'
+version = '1.0.1'
 description = 'This library allows you to share Python files using a Webpage.'
 
 readme = 'README.md'
