@@ -9,6 +9,7 @@ This file contains PyFileShare-relate tools used for share py files.
 
 
 import os
+from datetime import datetime
 
 from typing import Callable
 
@@ -95,7 +96,10 @@ def get_directory_datas(
 
             if content[-len(target_extension):] == target_extension:
                 """ content extension is target """
-                datas[content] = read_file(content_path)
+                datas[content] = (
+                    read_file(content_path),
+                    datetime.fromtimestamp(os.path.getmtime(content_path)),
+                )
                 ...
 
             continue
@@ -126,10 +130,12 @@ def pages_from(
         """  Reform """
         for name, content in _datas.items():
             content_route = f"{route}/{name}"
-            contents[content_route] = name
+            contents[content_route] = (
+                name, content,
+            )
 
-            if isinstance(content, str):
-                pages[content_route] = content
+            if isinstance(content, tuple):
+                pages[content_route] = content[0]
                 ...
 
             else:
@@ -150,8 +156,13 @@ def pages_from(
 def gen_index_page(name: str, contents: dict) -> str:
     """ Generate index page """
     content: str = f"<h3>{name}<br>directory content links</h3>"
-    for link, name in contents.items():
-        content += f"<a href='{link[1:]}'>{name}</a><br>"
+    for link, content_ in contents.items():
+        name_ = content_[0]
+        date = ""
+        if isinstance(content_[1], tuple):
+            date = "["+str(content_[1][1]).split(".")[0]+"]"
+            ...
+        content += f"<a href='{link[1:]}'>{name_}{date}</a><br>"
         continue
     return content
 
